@@ -8,12 +8,13 @@ install() {
     apt-get install -y \
         python-software-properties \
         software-properties-common
-
-    LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php
+    
+    curl -sL https://deb.nodesource.com/setup_6.x | bash -
+    LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
 
     apt-get update
 
-    apt-get install \
+    apt-get install -y\
         apache2 \
         libapache2-mod-php${PHP_VERSION} \
         php${PHP_VERSION} \
@@ -29,8 +30,16 @@ install() {
         php${PHP_VERSION}-soap \
         php${PHP_VERSION}-xml \
         php${PHP_VERSION}-zip \
-        php-xdebug
+        php${PHP_VERSION}-gd \
+        php-xdebug \
+        nodejs
 }
+
+install_utils() {
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    npm install -g bower
+}
+
 copy_defaults() {
     cp -riv "$DIR/default_configs/." / || exit 1
 }
@@ -65,6 +74,7 @@ function usage {
 case "$1" in
     install)
         install
+        install_utils
     ;;
     copy-files)
         copy_defaults
