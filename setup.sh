@@ -1,19 +1,25 @@
 #!/bin/bash
-PHP_VERSION="7.1"
+. $(dirname "$0")/.settings
 DIR="$(dirname "$0")"
 ADIR="$(realpath "$DIR")"
 
 install() {
-    apt-get update || exit 1
+    if ! dpkg-query -l python-software-properties >/dev/null; then
+        apt-get update || exit 1
 
-    apt-get install -y \
-        python-software-properties \
-        software-properties-common
+        apt-get install -y \
+            python-software-properties \
+            software-properties-common
+    fi
     
-    curl -sL https://deb.nodesource.com/setup_6.x | bash -
+    if ! dpkg-query -l nodejs >/dev/null; then
+        curl -sL https://deb.nodesource.com/setup_8.x | bash -
+    fi
     LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
+    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
 
-    apt-get update
+    apt-get update || exit 1
 
     apt-get install -y\
         apache2 \
@@ -23,28 +29,46 @@ install() {
         php${PHP_VERSION}-curl \
         php${PHP_VERSION}-common \
         php${PHP_VERSION}-fpm \
+        php${PHP_VERSION}-gd \
         php${PHP_VERSION}-intl \
         php${PHP_VERSION}-json \
         php${PHP_VERSION}-mbstring \
         php${PHP_VERSION}-mysql \
-        php${PHP_VERSION}-mcrypt \
         php${PHP_VERSION}-opcache \
         php${PHP_VERSION}-readline \
         php${PHP_VERSION}-soap \
         php${PHP_VERSION}-xml \
         php${PHP_VERSION}-zip \
-        php${PHP_VERSION}-gd \
-        php-xdebug \
         php-apcu \
+        php-mongodb \
+        php-redis \
+        php-xdebug
+
+        # php${PHP_VERSION}-bcmath \
+        # php${PHP_VERSION}-bz2 \
+        # php${PHP_VERSION}-imap \
+        # php${PHP_VERSION}-sqlite3 \
+    
+    apt-get install -y\
         nodejs
+
+    apt-get install -y\
+        redis-server \
+        redis-tools
+
+    apt-get install -y\
+        mariadb-server \
+        mariadb-client
 }
 
 install_utils() {
+    apt-get install -y\
+        yarn
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-    npm install -g bower
 }
 
 copy_defaults() {
+    cp -riv "$DIR/default_configs/etc/init.d/." /etc/init.d/ || exit 1
     cp -riv "$DIR/default_configs/etc/apache2/." /etc/apache2/ || exit 1
     cp -riv "$DIR/default_configs/etc/php/." /etc/php/${PHP_VERSION}/ || exit 1
 }
@@ -60,16 +84,23 @@ symlink_helpers() {
     done
 }
 configure_defaults() {
-    a2enmod php${PHP_VERSION} || exit 1
-    a2enmod vhost_alias
-    a2enmod ssl
+    a2dismod php${PHP_VERSION}
+    #a2enmod php${PHP_VERSION} || exit 1
+    #a2enmod php${PHP_VERSION} || exit 1
+    a2enconf php${PHP_VERSION}-fpm || exit 1
+    a2enmod proxy_fcgi_module
+
+    a2enmod vhost_alias rewrite ssl
     a2dissite 000-default
     a2ensite 050-localhost.conf
     a2ensite 100-wildcard-dev.conf
     a2ensite 200-ssl-wildcard-dev.conf
     a2ensite 110-wildcard-test.conf
     a2ensite 210-ssl-wildcard-test.conf
-    phpenmod lamp-dev
+    phpenmod -v ${PHP_VERSION} lamp-dev
+}
+run_fixes() {
+    mkdir -p /run/php/
 }
 
 function hr {
@@ -94,13 +125,16 @@ case "$1" in
     install)
         install
         install_utils
+        run_fixes
     ;;
     copy-files)
         copy_defaults
         symlink_helpers
+        run_fixes
     ;;
     set-defaults)
         configure_defaults
+        run_fixes
     ;;
     help|-h)
         usage

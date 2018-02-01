@@ -1,9 +1,16 @@
 #!/bin/bash
+PHP_VERSION="7.2"
+. $(dirname "$0")/.settings
 
 s() {
     case "$1" in
         apache2)
             if ! which apache2 >/dev/null; then
+                return;
+            fi
+            ;;
+        php${PHP_VERSION}-fpm)
+            if ! which php-fpm${PHP_VERSION} >/dev/null; then
                 return;
             fi
             ;;
@@ -17,13 +24,20 @@ s() {
                 return;
             fi
             ;;
+        mongod)
+            if ! which mongod >/dev/null; then
+                return;
+            fi
+            ;;
     esac
     service $1 $2
 }
 all() {
     s apache2 $1
+    s php${PHP_VERSION}-fpm $1
     s mysql $1
     s redis-server $1
+    s mongod $1
 }
 start() {
     all start
