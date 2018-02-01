@@ -99,8 +99,12 @@ configure_defaults() {
     a2ensite 210-ssl-wildcard-test.conf
     phpenmod -v ${PHP_VERSION} lamp-dev
 }
-run_fixes() {
+run_install_fixes() {
     mkdir -p /run/php/
+}
+run_defaults_fixes() {
+    sudo mysql -e 'UPDATE mysql.user SET plugin = NULL WHERE Host = "localhost" AND User = "root" AND Password = ""'
+    sudo mysql -e 'FLUSH PRIVILEGES'
 }
 
 function hr {
@@ -125,16 +129,15 @@ case "$1" in
     install)
         install
         install_utils
-        run_fixes
+        run_install_fixes
     ;;
     copy-files)
         copy_defaults
         symlink_helpers
-        run_fixes
     ;;
     set-defaults)
         configure_defaults
-        run_fixes
+        run_defaults_fixes
     ;;
     help|-h)
         usage
