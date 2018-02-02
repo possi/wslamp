@@ -1,6 +1,6 @@
 #!/bin/bash
 PHP_VERSION="7.2"
-. $(dirname "$0")/.settings
+. $(dirname "$(realpath "$0")")/.settings
 
 s() {
     case "$1" in
@@ -39,6 +39,11 @@ all() {
     s redis-server $1
     s mongod $1
 }
+fix_run() {
+    mkdir -p /run/php/
+    mkdir -p /var/run/screen/
+    chmod a+w /var/run/screen/
+}
 start() {
     all start
 }
@@ -72,6 +77,7 @@ function usage {
     '
 }
 
+fix_run
 case "$1" in
     start)
         start
