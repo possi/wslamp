@@ -73,7 +73,7 @@ copy_defaults() {
     cp -riv "$DIR/default_configs/etc/php/." /etc/php/${PHP_VERSION}/ || exit 1
 }
 symlink_helpers() {
-    ln -sf "$ADIR/control.sh" /usr/local/bin/lamp-control
+    ln -sf "$ADIR/control.sh" /usr/local/sbin/lamp-control
     for d in "/mnt/c/xampp/htdocs" "/mnt/d/xampp/htdocs" "/mnt/c/lamp/htdocs" "/mnt/d/lamp/htdocs" "$ADIR/htdocs";
     do
         if [ -d $d ]; then
@@ -124,6 +124,11 @@ function usage {
         set-defaults    Enable Apache-Modules and -Sites
     '
 }
+
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run as root" 1>&2
+    exit 1
+fi
 
 case "$1" in
     install)
