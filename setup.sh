@@ -90,7 +90,7 @@ configure_defaults() {
     a2enconf php${PHP_VERSION}-fpm || exit 1
     a2enmod proxy_fcgi_module
 
-    a2enmod vhost_alias rewrite ssl
+    a2enmod vhost_alias rewrite ssl setenvif
     a2dissite 000-default
     a2ensite 050-localhost.conf
     a2ensite 100-wildcard-dev.conf
