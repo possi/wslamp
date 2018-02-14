@@ -1,5 +1,5 @@
 PHP_VERSION="7.2"
 
-if [ -e "$(dirname "$0")/.settings.local" ]; then
-  . "$(dirname "$0")/.settings.local"
+if [ -e "$(dirname "$(realpath "$0")")/.settings.local" ]; then
+  . "$(dirname "$(realpath "$0")")/.settings.local"
 fi
