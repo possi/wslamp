@@ -13,7 +13,7 @@ install() {
     fi
     
     if ! dpkg-query -l nodejs >/dev/null; then
-        curl -sL https://deb.nodesource.com/setup_8.x | bash -
+        curl -sL https://deb.nodesource.com/setup_10.x | bash -
     fi
     LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
