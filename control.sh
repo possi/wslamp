@@ -23,7 +23,7 @@ s() {
                 return;
             fi
             ;;
-        mongodb)
+        mongod)
             if ! which mongod >/dev/null; then
                 return;
             fi
@@ -36,7 +36,7 @@ all() {
     s php${PHP_VERSION}-fpm $1
     s mysql $1
     s redis-server $1
-    s mongodb $1
+    s mongod $1
 }
 fix_run() {
     mkdir -p /run/php/

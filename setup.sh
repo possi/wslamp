@@ -15,6 +15,15 @@ install() {
     if ! dpkg-query -l nodejs >/dev/null; then
         curl -sL https://deb.nodesource.com/setup_10.x | bash -
     fi
+    if ! dpkg-query -l mariadb-server >/dev/null; then
+        curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF1656F24C74CD1D8" | apt-key add
+        add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirror2.hs-esslingen.de/mariadb/repo/10.2/ubuntu bionic main'
+    fi
+    #if ! dpkg-query -l mongodb-server >/dev/null; then
+    #    curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x0C49F3730359A14518585931BC711F9BA15703C6" | apt-key add
+    #    echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.4.list
+    #fi
+
     LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
     echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
@@ -88,7 +97,7 @@ configure_defaults() {
     #a2enmod php${PHP_VERSION} || exit 1
     #a2enmod php${PHP_VERSION} || exit 1
     a2enconf php${PHP_VERSION}-fpm || exit 1
-    a2enmod proxy_fcgi_module
+    a2enmod proxy_fcgi proxy_http proxy_http2 proxy_wstunnel
 
     a2enmod vhost_alias rewrite ssl setenvif
     a2dissite 000-default
@@ -103,7 +112,7 @@ run_install_fixes() {
     mkdir -p /run/php/
 }
 run_defaults_fixes() {
-    sudo mysql -e 'UPDATE mysql.user SET plugin = NULL WHERE Host = "localhost" AND User = "root" AND Password = ""'
+    sudo mysql -e 'UPDATE mysql.user SET plugin = "" WHERE Host = "localhost" AND User = "root" AND Password = ""'
     sudo mysql -e 'FLUSH PRIVILEGES'
 }
 
