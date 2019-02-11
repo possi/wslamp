@@ -80,6 +80,7 @@ copy_defaults() {
     cp -riv "$DIR/default_configs/etc/init.d/." /etc/init.d/ || exit 1
     cp -riv "$DIR/default_configs/etc/apache2/." /etc/apache2/ || exit 1
     cp -riv "$DIR/default_configs/etc/php/." /etc/php/${PHP_VERSION}/ || exit 1
+    cp -riv "$DIR/default_configs/etc/sudoers.d/." /etc/sudoers.d/ || exit 1
 }
 symlink_helpers() {
     ln -sf "$ADIR/control.sh" /usr/local/sbin/lamp-control
