@@ -2,6 +2,7 @@
 . $(dirname "$(realpath "$0")")/.settings
 
 s() {
+    s=$1
     case "$1" in
         apache2)
             if ! which apache2 >/dev/null; then
@@ -27,16 +28,19 @@ s() {
             if ! which mongod >/dev/null; then
                 return;
             fi
+            if -e /etc/init.d/mongod; then
+                s=mongod
+            fi
             ;;
     esac
-    service $1 $2
+    service $s $2
 }
 all() {
     s apache2 $1
     s php${PHP_VERSION}-fpm $1
     s mysql $1
     s redis-server $1
-    s mongod $1
+    s mongodb $1
 }
 fix_run() {
     mkdir -p /run/php/
