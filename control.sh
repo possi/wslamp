@@ -24,11 +24,11 @@ s() {
                 return;
             fi
             ;;
-        mongod)
+        mongod|mongodb)
             if ! which mongod >/dev/null; then
                 return;
             fi
-            if -e /etc/init.d/mongod; then
+            if [ -e /etc/init.d/mongod ]; then
                 s=mongod
             fi
             ;;
