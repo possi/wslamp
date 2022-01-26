@@ -13,7 +13,7 @@ install() {
     fi
     
     if ! dpkg-query -l nodejs >/dev/null; then
-        curl -sL https://deb.nodesource.com/setup_10.x | bash -
+        curl -sL https://deb.nodesource.com/setup_16.x | bash -
     fi
     if ! dpkg-query -l mariadb-server >/dev/null; then
         curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF1656F24C74CD1D8" | apt-key add
@@ -40,7 +40,6 @@ install() {
         php${PHP_VERSION}-fpm \
         php${PHP_VERSION}-gd \
         php${PHP_VERSION}-intl \
-        php${PHP_VERSION}-json \
         php${PHP_VERSION}-mbstring \
         php${PHP_VERSION}-mysql \
         php${PHP_VERSION}-opcache \
@@ -57,6 +56,10 @@ install() {
         # php${PHP_VERSION}-bz2 \
         # php${PHP_VERSION}-imap \
         # php${PHP_VERSION}-sqlite3 \
+    
+    apt-get install -y\
+        php${PHP_VERSION}-json \
+        || true
     
     apt-get install -y\
         nodejs
