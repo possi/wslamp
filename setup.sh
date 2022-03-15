@@ -52,6 +52,10 @@ install() {
         php-redis \
         php-xdebug
 
+    apt-get install -y
+        php${PHP_VERSION}-json \
+        || true
+
         # php${PHP_VERSION}-bcmath \
         # php${PHP_VERSION}-bz2 \
         # php${PHP_VERSION}-imap \
@@ -97,10 +101,6 @@ symlink_helpers() {
     done
 }
 configure_defaults() {
-    a2dismod php${PHP_VERSION}
-    #a2enmod php${PHP_VERSION} || exit 1
-    #a2enmod php${PHP_VERSION} || exit 1
-    a2enconf php${PHP_VERSION}-fpm || exit 1
     a2enmod proxy_fcgi proxy_http proxy_http2 proxy_wstunnel
 
     a2enmod vhost_alias rewrite ssl setenvif
@@ -110,7 +110,8 @@ configure_defaults() {
     a2ensite 200-ssl-wildcard-dev.conf
     a2ensite 110-wildcard-test.conf
     a2ensite 210-ssl-wildcard-test.conf
-    phpenmod -v ${PHP_VERSION} lamp-dev
+
+    select_php_version
 }
 run_install_fixes() {
     mkdir -p /run/php/
@@ -118,6 +119,26 @@ run_install_fixes() {
 run_defaults_fixes() {
     sudo mysql -e 'UPDATE mysql.user SET plugin = "" WHERE Host = "localhost" AND User = "root" AND Password = ""'
     sudo mysql -e 'FLUSH PRIVILEGES'
+}
+select_php_version() {
+    ALL_PHP_VERISIONS=(5.6 7.0 7.1 7.2 7.3 7.4 8.0 8.1 8.2)
+    for DISABLE_PHP_VERSION in ${ALL_PHP_VERISIONS[*]}
+    do
+        a2dismod php${DISABLE_PHP_VERSION} >/dev/null 2>&1
+        a2disconf php${DISABLE_PHP_VERSION}-fpm >/dev/null 2>&1
+        service php${DISABLE_PHP_VERSION}-fpm stop >/dev/null 2>&1
+    done
+    a2enconf php${PHP_VERSION}-fpm || exit 1
+
+    phpenmod -v ${PHP_VERSION} lamp-dev
+
+    update-alternatives --set php /usr/bin/php${PHP_VERSION}
+}
+restart_php() {
+    if service apache2 status; then
+        service php${PHP_VERSION}-fpm restart
+        service apache2 restart
+    fi
 }
 
 function hr {
@@ -135,6 +156,7 @@ function usage {
         install         Install Apache, PHP etc, via apt-get install
         copy-files      Install Apache-VirtualHost-Configurations and PHP Default-Settings and helper symlinks
         set-defaults    Enable Apache-Modules and -Sites
+        php-version     Switch to configured PHP-Version (via ENV $PHP_VERSION)
     '
 }
 
@@ -156,6 +178,11 @@ case "$1" in
     set-defaults)
         configure_defaults
         run_defaults_fixes
+    ;;
+    php-version)
+        if [ ! -z "$2" ]; then PHP_VERSION="$2"; fi;
+        select_php_version
+        restart_php
     ;;
     help|-h)
         usage
