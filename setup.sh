@@ -157,6 +157,7 @@ function usage {
         copy-files      Install Apache-VirtualHost-Configurations and PHP Default-Settings and helper symlinks
         set-defaults    Enable Apache-Modules and -Sites
         php-version     Switch to configured PHP-Version (via ENV $PHP_VERSION)
+        cleanup         Uninstal outdated PHP-Versions
     '
 }
 
@@ -183,6 +184,9 @@ case "$1" in
         if [ ! -z "$2" ]; then PHP_VERSION="$2"; fi;
         select_php_version
         restart_php
+    ;;
+    cleanup)
+        apt remove "php7.0*" "php7.1*" "php7.2*" "php7.3*" "php5.6*"
     ;;
     help|-h)
         usage
