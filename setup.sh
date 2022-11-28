@@ -133,6 +133,9 @@ select_php_version() {
     phpenmod -v ${PHP_VERSION} lamp-dev
 
     update-alternatives --set php /usr/bin/php${PHP_VERSION}
+
+    test -f $DIR/.settings.local && sed -i 's/PHP_VERSION=".*"/PHP_VERSION="'$PHP_VERSION'"/' $DIR/.settings.local
+    grep PHP_VERSION $DIR/.settings.local >/dev/null || echo 'PHP_VERSION="'$PHP_VERSION'"' >> $DIR/.settings.local
 }
 restart_php() {
     if service apache2 status; then
